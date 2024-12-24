@@ -1,0 +1,19 @@
+const Drop = mongoose.model('drop', {
+    id: Number,
+    name: String,
+    icon: String,
+    link: String,
+    isNightmare: Boolean,
+    npcPrice: Number,
+    chance: Number,
+    isRare: Boolean
+});
+
+const Clan = mongoose.model('clan', {
+    clan: String,
+    icon: String,
+    id: Number,
+    element: String,
+    lurer: String,
+    hunts: [Number]
+});
