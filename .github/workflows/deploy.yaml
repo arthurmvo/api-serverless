@@ -1,0 +1,40 @@
+name: Build and Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main  # O pipeline será acionado ao realizar um push na branch main.
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3  # Faz o checkout do código no repositório.
+
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.23.4 # Versão do Go usada no projeto.
+
+    - name: Install dependencies
+      run: go mod tidy  # Certifica-se de que todas as dependências estão instaladas.
+
+    - name: Build Go executable
+      run: GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bootstrap main.go
+      # Observação: o GOOS e o GOARCH garantem que o executável é compatível com o ambiente Linux do Lambda.
+
+    - name: Zip executable
+      run: zip bootstrap.zip bootstrap
+      # Compacta o executável em um arquivo deployment.zip que será enviado ao Lambda.
+
+    - name: Deploy to AWS Lambda
+      uses: aws-actions/aws-lambda-deploy@v1
+      with:
+        function-name: YOUR_FUNCTION_NAME  # Nome da sua função Lambda.
+        aws-region: YOUR_AWS_REGION       # Região onde está hospedado seu Lambda.
+        zip-file: bootstrap.zip          # Arquivo .zip gerado.
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
