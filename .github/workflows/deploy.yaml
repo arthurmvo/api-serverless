@@ -36,7 +36,7 @@ jobs:
         # Compresses the executable into a deployment.zip file for Lambda.
 
     - name: Deploy to AWS Lambda
-      uses: appleboy/aws-lambda-deploy-action@v0.2.1 # Using the action from appleboy
+      uses: appleboy/lambda-action@v0.2.0 # Using the action from appleboy
       with:
         function_name: API  # Name of your Lambda function.
         zip_file: ./fullAPI/bootstrap.zip  # Use the zip file created in ./fullAPI.
