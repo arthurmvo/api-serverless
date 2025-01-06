@@ -93,6 +93,6 @@ type Player struct {
 			Bosses    []string        `json:"bosses"`
 			Drops     [][]interface{} `json:"drops"`
 			Character string          `json:"character"`
-		}
+		} `json:"boss"`
 	} `json:"transactions"`
 }
