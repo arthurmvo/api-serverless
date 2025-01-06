@@ -85,5 +85,14 @@ type Player struct {
 		Rifts []struct {
 			Type string `json:"type"`
 		} `json:"rifts"`
+		Boss []struct {
+			Type      string          `json:"type"`
+			Result    float64         `json:"result"`
+			Date      string          `json:"date"`
+			Id        int             `json:"id"`
+			Bosses    []string        `json:"bosses"`
+			Drops     [][]interface{} `json:"drops"`
+			Character string          `json:"character"`
+		}
 	} `json:"transactions"`
 }
