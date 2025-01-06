@@ -3,7 +3,7 @@ name: Build and Deploy to AWS Lambda
 on:
   push:
     branches:
-      - main  # O pipeline será acionado ao realizar um push na branch main.
+      - main  # The pipeline will be triggered on a push to the main branch.
 
 jobs:
   build-deploy:
@@ -11,33 +11,36 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3  # Faz o checkout do código no repositório.
+      uses: actions/checkout@v3  # Checkout the code from the repository.
 
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
-        go-version: 1.23.4 # Versão do Go usada no projeto.
-        
-    - name: Change working directory to ./fullApi
-      run: cd ./fullAPI
+        go-version: 1.23.4 # Go version used in the project.
 
     - name: Install dependencies
-      run: go mod tidy  # Certifica-se de que todas as dependências estão instaladas.
+      run: |
+        cd fullAPI  # Change directory to ./fullAPI where main.go is located.
+        go mod tidy  # Ensures that all dependencies are installed.
 
     - name: Build Go executable
-      run: GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bootstrap main.go
-      # Observação: o GOOS e o GOARCH garantem que o executável é compatível com o ambiente Linux do Lambda.
+      run: |
+        cd fullAPI  # Change to ./fullAPI directory.
+        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bootstrap main.go
+        # Build the Go executable compatible with AWS Lambda.
 
     - name: Zip executable
-      run: zip bootstrap.zip bootstrap
-      # Compacta o executável em um arquivo deployment.zip que será enviado ao Lambda.
+      run: |
+        cd fullAPI  # Make sure we are in the correct directory.
+        zip bootstrap.zip bootstrap
+        # Compresses the executable into a deployment.zip file for Lambda.
 
     - name: Deploy to AWS Lambda
-      uses: aws-actions/aws-lambda-deploy@v1
+      uses: appleboy/aws-lambda-deploy-action@v0.2.1 # Using the action from appleboy
       with:
-        function-name: API  # Nome da sua função Lambda.
-        aws-region: sa-east-1     # Região onde está hospedado seu Lambda.
-        zip-file: bootstrap.zip          # Arquivo .zip gerado.
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        function_name: API  # Name of your Lambda function.
+        zip_file: ./fullAPI/bootstrap.zip  # Use the zip file created in ./fullAPI.
+        region: sa-east-1        # The region where your Lambda is hosted.
+        profile: default                  # Optional: Provide the AWS profile to use.
+        access_key: ${{ secrets.AWS_ACCESS_KEY_ID }} # AWS Access Key.
+        secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWS Secret Access Key.
