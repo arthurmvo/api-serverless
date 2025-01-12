@@ -92,7 +92,7 @@ func updatePlayer(ctx context.Context, request events.LambdaFunctionURLRequest, 
 // func getPlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
 func getPlayer(ctx context.Context, req events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, lambdahandler.LambdaError) {
 	uid := params["uid"]
-
+	fmt.Print(uid, "uid")
 	// Find player in DynamoDB
 	sess := session.Must(session.NewSession())
 	svc := dynamodb.New(sess)
@@ -109,7 +109,7 @@ func getPlayer(ctx context.Context, req events.LambdaFunctionURLRequest, params 
 	if err != nil {
 		return nil, lambdahandler.NewLambdaError(500, fmt.Sprintf("Error getting item from DynamoDB: %s", err.Error()))
 	}
-	fmt.Print("error 500")
+
 	if result.Item == nil {
 		return nil, lambdahandler.NewLambdaError(404, "Player not found")
 	}
