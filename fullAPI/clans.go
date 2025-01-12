@@ -3,7 +3,6 @@ package main
 import (
 	// "context"
 	"context"
-	"encoding/json"
 	"fmt"
 
 	// "github.com/arthurmvo/lambdahandler"
@@ -16,7 +15,7 @@ import (
 )
 
 // func getClans() (events.LambdaFunctionURLResponse, error) {
-func getClans(ctx context.Context, req events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, error) {
+func getClans(ctx context.Context, req events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, lambdahandler.LambdaError) {
 	fmt.Print("Starting router")
 	// fmt.Print(req)
 	sess := session.Must(session.NewSession())
@@ -28,31 +27,14 @@ func getClans(ctx context.Context, req events.LambdaFunctionURLRequest, params l
 
 	result, err := svc.Scan(input)
 	if err != nil {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Error scanning DynamoDB: %s", err.Error()),
-		}, nil
+		return nil, lambdahandler.NewLambdaError(500, fmt.Sprintf("Error scanning DynamoDB: %s", err.Error()))
 	}
 
 	var clans []Clan
 	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &clans)
 	if err != nil {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Error unmarshalling result: %s", err.Error()),
-		}, nil
+		return nil, lambdahandler.NewLambdaError(500, fmt.Sprintf("Error unmarshalling result: %s", err.Error()))
 	}
 
-	body, err := json.Marshal(clans)
-	if err != nil {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Error marshalling response: %s", err.Error()),
-		}, nil
-	}
-
-	return events.LambdaFunctionURLResponse{
-		StatusCode: 200,
-		Body:       string(body),
-	}, nil
+	return clans, nil
 }

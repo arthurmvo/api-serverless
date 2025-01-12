@@ -14,7 +14,7 @@ import (
 )
 
 // func getDrops() (events.LambdaFunctionURLResponse, error) {
-func getDrops(ctx context.Context, req events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, error) {
+func getDrops(ctx context.Context, req events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, lambdahandler.LambdaError) {
 	sess := session.Must(session.NewSession())
 	svc := dynamodb.New(sess)
 
@@ -24,44 +24,24 @@ func getDrops(ctx context.Context, req events.LambdaFunctionURLRequest, params l
 
 	result, err := svc.Scan(input)
 	if err != nil {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Error scanning DynamoDB: %s", err.Error()),
-		}, nil
+		return nil, lambdahandler.NewLambdaError(500, fmt.Sprintf("Error scanning DynamoDB: %s", err.Error()))
 	}
 
 	var drops []Drop
 	err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &drops)
 	if err != nil {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Error unmarshalling result: %s", err.Error()),
-		}, nil
+		return nil, lambdahandler.NewLambdaError(500, fmt.Sprintf("Error unmarshalling result: %s", err.Error()))
 	}
 
-	body, err := json.Marshal(drops)
-	if err != nil {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Error marshalling response: %s", err.Error()),
-		}, nil
-	}
-
-	return events.LambdaFunctionURLResponse{
-		StatusCode: 200,
-		Body:       string(body),
-	}, nil
+	return drops, nil
 }
 
 // func createDrop(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-func createDrop(ctx context.Context, request events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, error) {
+func createDrop(ctx context.Context, request events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, lambdahandler.LambdaError) {
 	var drop Drop
 	err := json.Unmarshal([]byte(request.Body), &drop)
 	if err != nil {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 400,
-			Body:       fmt.Sprintf("Error unmarshalling request body: %s", err.Error()),
-		}, nil
+		return nil, lambdahandler.NewLambdaError(400, fmt.Sprintf("Error unmarshalling request body: %s", err.Error()))
 	}
 
 	sess := session.Must(session.NewSession())
@@ -69,10 +49,7 @@ func createDrop(ctx context.Context, request events.LambdaFunctionURLRequest, pa
 
 	av, err := dynamodbattribute.MarshalMap(drop)
 	if err != nil {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Error marshalling drop: %s", err.Error()),
-		}, nil
+		return nil, lambdahandler.NewLambdaError(500, fmt.Sprintf("Error marshalling drop: %s", err.Error()))
 	}
 
 	input := &dynamodb.PutItemInput{
@@ -82,14 +59,8 @@ func createDrop(ctx context.Context, request events.LambdaFunctionURLRequest, pa
 
 	_, err = svc.PutItem(input)
 	if err != nil {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 500,
-			Body:       fmt.Sprintf("Error putting item into DynamoDB: %s", err.Error()),
-		}, nil
+		return nil, lambdahandler.NewLambdaError(500, fmt.Sprintf("Error putting item into DynamoDB: %s", err.Error()))
 	}
 
-	return events.LambdaFunctionURLResponse{
-		StatusCode: 201,
-		Body:       "Drop created successfully",
-	}, nil
+	return "Drop created successfully", nil
 }
