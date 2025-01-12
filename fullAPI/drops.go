@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
+	"github.com/arthurmvo/lambdahandler"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -11,7 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-func getDrops() (events.LambdaFunctionURLResponse, error) {
+// func getDrops() (events.LambdaFunctionURLResponse, error) {
+func getDrops(ctx context.Context, req events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, error) {
 	sess := session.Must(session.NewSession())
 	svc := dynamodb.New(sess)
 
@@ -50,7 +53,8 @@ func getDrops() (events.LambdaFunctionURLResponse, error) {
 	}, nil
 }
 
-func createDrop(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+// func createDrop(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+func createDrop(ctx context.Context, request events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, error) {
 	var drop Drop
 	err := json.Unmarshal([]byte(request.Body), &drop)
 	if err != nil {

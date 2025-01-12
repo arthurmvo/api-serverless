@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 
+	"github.com/arthurmvo/lambdahandler"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -13,7 +14,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-func createPlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+// func createPlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+func createPlayer(ctx context.Context, request events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, error) {
 	// Unmarshal the request body into a Player struct
 	var newPlayer Player
 	err := json.Unmarshal([]byte(request.Body), &newPlayer)
@@ -67,17 +69,20 @@ func createPlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctio
 	}, nil
 }
 
-func updatePlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+// func updatePlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+func updatePlayer(ctx context.Context, request events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, error) {
 
-	fmt.Println(request, "request")
-	fmt.Println(request.RawPath, "request.RawPath")
-	fmt.Println(request.RequestContext, "request.RequestContext")
-	uidStr := strings.Split(request.RequestContext.HTTP.Path, "/")[2]
-	uid, _ := strconv.Atoi(uidStr)
+	uid, err := strconv.Atoi(params["uid"])
+	if err != nil {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 400,
+			Body:       fmt.Sprintf("Invalid ID format: %s", err.Error()),
+		}, nil
+	}
 
 	// Unmarshal the request body into a Player struct
 	var updatedPlayer Player
-	err := json.Unmarshal([]byte(request.Body), &updatedPlayer)
+	err = json.Unmarshal([]byte(request.Body), &updatedPlayer)
 	if err != nil {
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 400,
@@ -119,14 +124,12 @@ func updatePlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctio
 
 	jsonBody, _ := json.Marshal(updatedPlayer)
 
-	return events.LambdaFunctionURLResponse{
-		StatusCode: 200,
-		Body:       string(jsonBody),
-	}, nil
+	return lambdahandler.SuccessResponse(jsonBody), nil
 }
 
-func getPlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	uidStr := strings.Split(request.RequestContext.HTTP.Path, "/")[2]
+// func getPlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+func getPlayer(ctx context.Context, req events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, error) {
+	uid := params["uid"]
 
 	// Find player in DynamoDB
 	sess := session.Must(session.NewSession())
@@ -136,7 +139,7 @@ func getPlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionUR
 		TableName: aws.String("players"), // Replace with your table name
 		Key: map[string]*dynamodb.AttributeValue{
 			"uid": {
-				N: aws.String(uidStr),
+				N: aws.String(uid),
 			},
 		},
 	})
@@ -171,15 +174,13 @@ func getPlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionUR
 		}, nil
 	}
 
-	return events.LambdaFunctionURLResponse{
-		StatusCode: 200,
-		Body:       string(playerJSON),
-	}, nil
+	return lambdahandler.SuccessResponse(playerJSON), nil
 
 }
 
-func deletePlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	uidStr := strings.Split(request.RequestContext.HTTP.Path, "/")[2]
+// func deletePlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+func deletePlayer(ctx context.Context, request events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, error) {
+	uid := params["uid"]
 
 	// Find player in DynamoDB
 	sess := session.Must(session.NewSession())
@@ -189,7 +190,7 @@ func deletePlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctio
 		TableName: aws.String("players"), // Replace with your table name
 		Key: map[string]*dynamodb.AttributeValue{
 			"uid": {
-				N: aws.String(uidStr),
+				N: aws.String(uid),
 			},
 		},
 	})
@@ -200,13 +201,5 @@ func deletePlayer(request events.LambdaFunctionURLRequest) (events.LambdaFunctio
 		}, nil
 	}
 
-	return events.LambdaFunctionURLResponse{
-		StatusCode: 200,
-		Headers: map[string]string{
-			"Access-Control-Allow-Origin":  "*",
-			"Access-Control-Allow-Methods": "OPTIONS, GET, PUT, POST",
-			"Access-Control-Allow-Headers": "Content-Type",
-		},
-		Body: "Player deleted successfully",
-	}, nil
+	return lambdahandler.SuccessResponse("Player deleted successfully"), nil
 }

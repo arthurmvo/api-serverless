@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
+	"github.com/arthurmvo/lambdahandler"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -11,7 +13,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-func getClans() (events.LambdaFunctionURLResponse, error) {
+// func getClans() (events.LambdaFunctionURLResponse, error) {
+func getClans(ctx context.Context, req events.LambdaFunctionURLRequest, params lambdahandler.Params) (interface{}, error) {
+	fmt.Print("Starting router")
+	fmt.Print(req)
 	sess := session.Must(session.NewSession())
 	svc := dynamodb.New(sess)
 
