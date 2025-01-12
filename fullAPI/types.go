@@ -60,7 +60,7 @@ type Player struct {
 			Mobs        []int           `json:"mobs"`
 			Extra       [][]interface{} `json:"extra"`
 			Date        string          `json:"date"`
-			Id          string          `json:"id"`
+			Id          int             `json:"id"`
 		} `json:"hunts"`
 		Services []struct {
 			Type        string  `json:"type"`
@@ -70,7 +70,7 @@ type Player struct {
 			Description string  `json:"description"`
 			Result      float64 `json:"result"`
 			Date        string  `json:"date"`
-			Id          string  `json:"id"`
+			Id          int     `json:"id"`
 		} `json:"services"`
 		Purchases []struct {
 			Type        string  `json:"type"`
@@ -80,7 +80,7 @@ type Player struct {
 			Description string  `json:"description"`
 			Result      float64 `json:"result"`
 			Date        string  `json:"date"`
-			Id          string  `json:"id"`
+			Id          int     `json:"id"`
 		} `json:"purchases"`
 		Rifts []struct {
 			Type string `json:"type"`
