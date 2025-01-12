@@ -105,10 +105,11 @@ func getPlayer(ctx context.Context, req events.LambdaFunctionURLRequest, params 
 			},
 		},
 	})
+	fmt.Print(result)
 	if err != nil {
 		return nil, lambdahandler.NewLambdaError(500, fmt.Sprintf("Error getting item from DynamoDB: %s", err.Error()))
 	}
-
+	fmt.Print("error 500")
 	if result.Item == nil {
 		return nil, lambdahandler.NewLambdaError(404, "Player not found")
 	}
