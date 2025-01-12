@@ -11,7 +11,7 @@ var allowedOrigins = []string{
 	"https://analyzer-pxg.vercel.app",
 	"https://staging-analyzer.vercel.app",
 	"https://analyzer-pxg-git-feature-lambda-arthurs-projects-b50471ed.vercel.app",
-	"*",
+	"https://cnwgmylttomjog5bxrjakz6fmm0quydw.lambda-url.sa-east-1.on.aws",
 }
 
 func cors(request events.LambdaFunctionURLRequest) (string, error) {
