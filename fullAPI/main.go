@@ -24,7 +24,7 @@ func handler(ctx context.Context, request events.LambdaFunctionURLRequest) (even
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 200,
 			Headers: map[string]string{
-				"Access-Control-Allow-Origin":  origin,
+				"Access-Control-Allow-Origin":  "*",
 				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
 				"Access-Control-Allow-Headers": "Content-Type",
 			},
